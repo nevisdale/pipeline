@@ -25,7 +25,7 @@ func main() {
 	}()
 
 	var p pipeline.Pipeline[int]
-	p.Use(
+	p = p.Steps(
 		pipeline.NewHandler(positive),
 		pipeline.NewHandler(square),
 		pipeline.NewHandler(lessOrEqual100),
@@ -53,7 +53,6 @@ func lessOrEqual100(ctx context.Context, x int) (int, bool) {
 	}
 	return x, true
 }
-
 ```
 
 # License

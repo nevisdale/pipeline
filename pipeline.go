@@ -8,8 +8,9 @@ type Pipeline[T any] struct {
 	handlers []Handler[T]
 }
 
-func (p *Pipeline[T]) Use(handlers ...Handler[T]) {
+func (p Pipeline[T]) Steps(handlers ...Handler[T]) Pipeline[T] {
 	p.handlers = append(p.handlers, handlers...)
+	return p
 }
 
 // Run creates a pipeline channel.
