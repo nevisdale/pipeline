@@ -1,7 +1,7 @@
-# pipeline is a golang package for building pipelines based on golang channels and generics.
+# pipeline is a golang package for pipeline building based on golang channels and generics.
 
 # Description
-The goal is building pipelines using handlers.
+The goal is pipeline building using handlers.
 
 # Example
 
@@ -30,7 +30,8 @@ func main() {
 		pipeline.NewHandler(square),
 		pipeline.NewHandler(lessOrEqual100),
 	)
-	for v := range p.Build(context.Background(), numbers) {
+
+	for v := range p.Run(numbers) {
 		fmt.Printf("v: %v\n", v)
 	}
 }
@@ -52,6 +53,7 @@ func lessOrEqual100(ctx context.Context, x int) (int, bool) {
 	}
 	return x, true
 }
+
 ```
 
 # License

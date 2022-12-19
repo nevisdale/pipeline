@@ -2,7 +2,6 @@ package pipeline
 
 import (
 	"context"
-	"sync"
 )
 
 type Pipeline[T any] struct {
@@ -13,29 +12,16 @@ func (p *Pipeline[T]) Use(handlers ...Handler[T]) {
 	p.handlers = append(p.handlers, handlers...)
 }
 
-func (p Pipeline[T]) Build(ctx context.Context, ins ...<-chan T) <-chan T {
-	r := make(chan T)
+// Run creates a pipeline channel.
+func (p Pipeline[T]) Run(in <-chan T) <-chan T {
+	return p.RunContext(context.Background(), in)
+}
 
-	var wg sync.WaitGroup
-	for _, in := range ins {
-		wg.Add(1)
-
-		go func(in <-chan T) {
-			defer wg.Done()
-
-			for v := range in {
-				r <- v
-			}
-		}(in)
-	}
-	go func() {
-		wg.Wait()
-		close(r)
-	}()
-
-	var ro <-chan T = r
+// RunContext creates a pipeline channel with context
+func (p Pipeline[T]) RunContext(ctx context.Context, in <-chan T) <-chan T {
+	in = contextHanlder(ctx, in)
 	for _, handler := range p.handlers {
-		ro = handler(ctx, ro)
+		in = handler(ctx, in)
 	}
-	return ro
+	return in
 }

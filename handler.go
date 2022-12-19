@@ -9,22 +9,24 @@ type Handler[T any] func(ctx context.Context, in <-chan T) <-chan T
 
 // HandlerFunc is a function for handling a value. You can return modified value.
 // If a handler returns value with false, values will not send to a next channel.
-type HandlerFunc[T any] func(ctx context.Context, x T) (_ T, valid bool)
+type HandlerFunc[T any] func(ctx context.Context, x T) (_ T, passed bool)
 
 // NewHandler creates a new handler for a Pipeline.
-func NewHandler[T any](h HandlerFunc[T], opts ...HandlerOpt) Handler[T] {
-	ho := hopt{
-		concurrent: 1,
-		cap:        0,
+func NewHandler[T any](h HandlerFunc[T]) Handler[T] {
+	return NewHandlerConcurrent(h, 1)
+}
+
+// NewHandler creates a new concurrent handler for a Pipeline.
+func NewHandlerConcurrent[T any](h HandlerFunc[T], concurrent int) Handler[T] {
+	if concurrent < 1 {
+		concurrent = 1
 	}
-	for _, opt := range opts {
-		opt(&ho)
-	}
+
 	return func(ctx context.Context, in <-chan T) <-chan T {
-		r := make(chan T, ho.cap)
+		r := make(chan T)
 
 		var wg sync.WaitGroup
-		for i := 0; i < ho.concurrent; i++ {
+		for i := 0; i < concurrent; i++ {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
@@ -42,30 +44,5 @@ func NewHandler[T any](h HandlerFunc[T], opts ...HandlerOpt) Handler[T] {
 			close(r)
 		}()
 		return r
-	}
-}
-
-type hopt struct {
-	concurrent int
-	cap        int
-}
-
-type HandlerOpt func(*hopt)
-
-// WithConcurrent sets goroutines count. If n is less than 1, do nothing.
-func WithConcurrent(n int) HandlerOpt {
-	return func(h *hopt) {
-		if n > 0 {
-			h.concurrent = n
-		}
-	}
-}
-
-// WithCapacity sets channel capacity. If n is less than 0, do nothing.
-func WithCapacity(n int) HandlerOpt {
-	return func(h *hopt) {
-		if n >= 0 {
-			h.cap = n
-		}
 	}
 }

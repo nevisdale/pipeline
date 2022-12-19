@@ -27,20 +27,6 @@ linters-settings:
     min-len: 2
     min-occurrences: 2
 
-linters:
-  disable-all: true
-  enable:
-    - govet
-    - errcheck
-    - deadcode
-    - varcheck
-    - ineffassign
-    - typecheck
-    - goconst
-    - gosec
-    - goimports
-    - megacheck
-
 issues:
   exclude-use-default: false
   exclude:
