@@ -30,7 +30,7 @@ func main() {
 		pipeline.NewHandler(square),
 		pipeline.NewHandler(lessOrEqual100),
 	)
-	for v := range p.Build(context.Background(), m) {
+	for v := range p.Build(context.Background(), numbers) {
 		fmt.Printf("v: %v\n", v)
 	}
 }
@@ -52,7 +52,6 @@ func lessOrEqual100(ctx context.Context, x int) (int, bool) {
 	}
 	return x, true
 }
-
 ```
 
 # License
